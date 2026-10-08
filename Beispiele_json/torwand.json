@@ -1,0 +1,22 @@
+{
+   "name": "Embedded-Workspace",
+   "id": 0,
+   "modules": [
+      {
+         "name": "Torwand.java",
+         "text": "\n/**\n * \n * Autor: Klaus Dingemann, Münster\n * @version 10.07.2015\n */\nimport sas.*;\nimport java.awt.Color;\npublic class Torwand\n{\n   View view;\n   Rectangle lochOben; \n   Rectangle lochUnten; \n   Rectangle torwandOben; \n   Rectangle torwandMitte; \n   Rectangle torwandUnten;\n   Circle ball;\n   Polygon pfeil;\n   Text ergebnis;\n  \n    Torwand()\n    {\n        view = new View(800, 600, \"Torwand\");\n        //Torwand zeichnen\n        Rectangle hintergrund = new Rectangle(0,0,800,600, Color.green);\n        torwandOben = new Rectangle(720,0,20,100,Color.blue);\n        torwandMitte = new Rectangle(720,190,20,281, Color.blue);\n        torwandUnten = new Rectangle(720,540,20,60, Color.blue);\n        Rectangle boden = new Rectangle(0, 560,800,40,Color.red);\n        lochOben = new Rectangle(720,100,72,90,Color.yellow);\n        lochUnten = new Rectangle(720,470,72,70, Color.yellow);\n        //Ball und Pfeil zeichnen\n        ball = new Circle(60,500,30,Color.magenta);\n        pfeil = new Polygon(60,527,Color.pink);\n        pfeil.add (40,0);\n        pfeil.add(40,-6);\n        pfeil.add(60,3);\n        pfeil.add(40,12);\n        pfeil.add(40,6);\n        pfeil.add(0,6);\n        ergebnis = new Text(50,10,\"\",Color.RED);\n    }\n\n\n    void richtungEinstellenUndSchiessen() {\n        boolean schiessen = false;\n        while (!schiessen) {\n          if (view.keyUpPressed()) {\n             pfeil.turn(-0.1);\n          } else if (view.keyDownPressed()) {\n             pfeil.turn(0.1);\n          } else if (view.keyRightPressed()) {\n             schiessen = true;\n          }\n        view.wait(10);\n        }\n        view.keyBufferDelete();\n    }\n    \n    boolean daneben(){\n        if (ball.intersects(torwandOben) || ball.intersects(torwandMitte)|| \n            ball.intersects(torwandUnten)) \n       {\n          return true;\n        } else\n          {\n                return false;\n          }\n    }\n    \n    \n    boolean treffer(){\n        if (lochOben.getShapeX()< ball.getShapeX() && lochOben.intersects(ball)  || lochUnten.contains(ball)) \n        { \n          return true;\n        } else\n          {\n             return false;\n          }\n    }\n    \n    void rueckmeldung(boolean getroffen){\n        if (getroffen) {\n            ergebnis.setText(\"Treffer (n: neues Spiel, e: Ende)\");\n        } else {\n            ergebnis.setText(\"Leider daneben (n: neues Spiel, e: Ende)\");\n        }\n        ergebnis.setHidden(false);\n    }\n    \n    void fuehreAus(){\n       char  z = ' ';\n        while (z!='e') { \n         richtungEinstellenUndSchiessen();\n         if (pfeil.getDirection()<=90 && pfeil.getDirection()>=48) {\n           ball.turnTo(pfeil.getDirection());\n           while (!treffer() && !daneben()) {\n             ball.move(4);\n             view.wait(10);\n           }\n           rueckmeldung(treffer());\n           z = view.keyGetChar();\n           ergebnis.setHidden(true);\n           ball.moveTo(60,500);\n         } \n\n      }\n    }  \n      \n   static void main(String[] args) {\n          Torwand tw = new Torwand();\n          tw.fuehreAus();\n    }\n    \n    \n}",
+         "id": 0,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      }
+   ],
+   "settings": {
+      "language": "Java",
+      "libraries": [
+         "sas",
+         "nrw"
+      ]
+   }
+}

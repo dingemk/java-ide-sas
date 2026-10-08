@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+*.code-workspace
+
+/node_modules/
+/dist/
+/dist-embedded/
+dist-ssr
+*.local
+
+# Editor directories and files
+/.vscode/*
+!/.vscode/extensions.json
+!/.vscode/settings.json
+!/.vscode/launch.json
+/.idea/
+
+/intern/
+
+upload*.cmd
+/package-lock.json
+
+# Generated SAS deployment packages and separate legacy repository
+/dist-sas-web/
+/upload/
+/sas-online-ide-dingemk/
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Original texture archive; extracted runtime assets remain versioned
+/assets/graphics/textures/celestial/celestial.zip

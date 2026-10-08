@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online-IDE</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #1e1e1e;
+    }
+
+    .java-online {
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .legal {
+      flex: none;
+      padding: 6px 12px;
+      color: #ddd;
+      font: 12px/1.5 system-ui, sans-serif;
+    }
+
+    .legal a {
+      color: #9ecfff;
+    }
+
+    .fallback {
+      color: white;
+      font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const hash = new URLSearchParams(location.hash.slice(1));
+    const program = hash.get("code") || "";
+    const filename = hash.get("filename") || "Program.java";
+    const parentOrigin = new URLSearchParams(location.search).get("parentOrigin")
+      || (document.referrer ? new URL(document.referrer).origin : location.origin);
+    const transferHost = window.parent !== window ? window.parent : window.opener;
+    function getIDE() {
+      return window.online_ide_access?.getIDE("sas-book-example");
+    }
+    function reply(message) {
+      if (transferHost) transferHost.postMessage(message, parentOrigin === "null" ? "*" : parentOrigin);
+    }
+    window.addEventListener("online-ide-ready", () => reply({ type: "sas-book:ready" }));
+    window.addEventListener("message", event => {
+      if (!transferHost || event.source !== transferHost || event.origin !== parentOrigin) return;
+      const message = event.data;
+      if (!message || typeof message !== "object") return;
+      if (message.type === "sas-book:ready?") {
+        if (getIDE()) reply({ type: "sas-book:ready" });
+      } else if (message.type === "sas-book:add-file" && typeof message.requestId === "string") {
+        try {
+          const ide = getIDE();
+          if (!ide) throw new Error("Die IDE ist noch nicht bereit.");
+          ide.addJavaFile(message.filename, message.code);
+          reply({ type: "sas-book:added", requestId: message.requestId });
+        } catch (error) {
+          reply({ type: "sas-book:error", requestId: message.requestId, error: error.message });
+        }
+      }
+    });
+
+    if (!hash.has("code") && !new URLSearchParams(location.search).has("workspace")) {
+      const message = document.createElement("p");
+      message.className = "fallback";
+      message.textContent = "Kein Programm übergeben.";
+      document.body.appendChild(message);
+    } else {
+      const container = document.createElement("div");
+      container.className = "java-online";
+      container.setAttribute("data-java-online", JSON.stringify({
+        id: "sas-book-example",
+        speed: "max",
+        withFileList: true,
+        hideEditor: false,
+        hideStartPanel: false,
+        libraries: ["sas", "nrw"],
+        cacheUserEdits: false,
+        workspaceURLParameterName: "workspace",
+        enableFileWriteAccess: true,
+        pictureBaseURL: new URL("./assets/", location.href).href,
+        settings: {
+          "compiler.shadowedSymbolErrorLevel": "error",
+          "compiler.equalityOperatorForStringsCompares": "references"
+        },
+        withClassDiagram: true
+      }));
+      const source = document.createElement("script");
+      source.type = "text/plain";
+      source.title = filename;
+      source.setAttribute("data-type", "java");
+      source.textContent = program;
+      container.appendChild(source);
+      document.body.appendChild(container);
+    }
+  </script>
+  <footer class="legal">
+    SAS: &copy; net-schulbuch.de gUG (haftungsbeschr&auml;nkt)
+    &middot; Online-IDE: Martin Pabst
+    &middot; <a href="./lizenzen.html" target="_blank" rel="noopener">Lizenzen &amp; Quelltext</a>
+  </footer>
+  <script type="module" src="/src/client/embedded/EmbeddedStarter.ts"></script>
+</body>
+</html>

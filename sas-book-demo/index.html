@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SAS-Beispiel im Schulbuch öffnen</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #16202a;
+      --muted: #5b6876;
+      --line: #d6dde5;
+      --panel: #ffffff;
+      --page: #eef3f8;
+      --accent: #1769aa;
+      --accent-dark: #0f4e82;
+      --code-bg: #101820;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--page);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .editor-panel,
+    .info-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 40px rgba(22, 32, 42, 0.08);
+    }
+
+    .editor-panel {
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .hint {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 520px;
+      resize: vertical;
+      border: 0;
+      padding: 20px;
+      background: var(--code-bg);
+      color: #edf6ff;
+      font: 15px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      tab-size: 3;
+      outline: none;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--line);
+      background: #f7f9fb;
+    }
+
+    .actions input {
+      width: 170px;
+      max-width: 100%;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font: inherit;
+    }
+
+    #transferStatus { margin: 0; padding: 0 20px 12px; }
+    button:disabled { opacity: 0.6; cursor: wait; }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .secondary {
+      background: white;
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    .secondary:hover {
+      background: #eef3f8;
+    }
+
+    .info-panel {
+      padding: 20px;
+    }
+
+    .info-panel h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .info-panel p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .info-panel code {
+      display: block;
+      white-space: pre-wrap;
+      background: #f3f6f9;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      color: #22313f;
+      font-size: 0.82rem;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: rgba(12, 18, 24, 0.72);
+      z-index: 20;
+      padding: 24px;
+    }
+
+    .modal[open] {
+      display: grid;
+      place-items: center;
+    }
+
+    .dialog {
+      width: min(1280px, 100%);
+      height: min(860px, calc(100vh - 48px));
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .dialog-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #f7f9fb;
+    }
+
+    .dialog-head strong {
+      font-size: 0.98rem;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #1e1e1e;
+    }
+
+    @media (max-width: 880px) {
+      main {
+        width: min(100% - 20px, 1120px);
+        padding: 20px 0;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-head,
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      textarea {
+        min-height: 420px;
+        font-size: 14px;
+      }
+
+      .modal {
+        padding: 8px;
+      }
+
+      .dialog {
+        height: calc(100vh - 16px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="workspace">
+      <section class="editor-panel" aria-labelledby="title">
+        <div class="panel-head">
+          <div>
+            <h1 id="title">SAS-Beispiel</h1>
+            <p class="hint">Der Code kann verändert und direkt in der Embedded-IDE geöffnet werden.</p>
+          </div>
+        </div>
+
+        <textarea id="source" spellcheck="false" aria-label="Java-SAS-Programm"></textarea>
+
+        <div class="actions">
+          <button class="primary" id="openIde" type="button">In IDE öffnen</button>
+          <label for="filename">Dateiname</label>
+          <input id="filename" value="Program.java" aria-label="Java-Dateiname" spellcheck="false">
+          <button class="secondary" id="addToIde" type="button">Zur IDE hinzufügen</button>
+          <button class="secondary" id="resetCode" type="button">Beispiel zurücksetzen</button>
+        </div>
+        <p id="transferStatus" role="status" aria-live="polite"></p>
+      </section>
+
+      <aside class="info-panel">
+        <h2>Einbindung</h2>
+        <p>Für den Serverbetrieb muss nur die Basis-URL zur Embedded-IDE angepasst werden.</p>
+        <code>const IDE_BASE_URL = "https://dein-server.example/ide";</code>
+        <p>SAS: &copy; net-schulbuch.de gUG (haftungsbeschränkt)<br>Online-IDE: Martin Pabst</p>
+        <p><a href="./lizenzen.html">Lizenzen &amp; Quelltext</a></p>
+      </aside>
+    </div>
+  </main>
+
+  <section class="modal" id="ideModal" aria-label="Online-IDE" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <div class="dialog-head">
+        <strong>Online-IDE</strong>
+        <button class="secondary" id="closeIde" type="button">Schließen</button>
+      </div>
+      <iframe id="ideFrame" title="Online-IDE mit SAS-Beispiel"></iframe>
+    </div>
+  </section>
+
+  <script>
+    const IDE_BASE_URL = new URLSearchParams(location.search).get("ideBase")
+      || (location.protocol.startsWith("http") ? new URL("../", location.href).href : "http://localhost:3000");
+    const IDE_RUNNER_URL = `${IDE_BASE_URL.replace(/\/$/, "")}/sas-book-demo/runner.html`;
+
+    const defaultProgram = `import sas.*;
+import java.awt.Color;
+
+View view = new View(600, 400, "Billard");
+Rectangle tisch = new Rectangle(0, 0, 600, 400, Color.GREEN);
+Rectangle bandeRechts = new Rectangle(580, 0, 20, 400, new Color(139, 69, 19));
+Rectangle bandeOben = new Rectangle(0, 0, 580, 20, new Color(139, 69, 19));
+Rectangle bandeLinks = new Rectangle(0, 20, 20, 380, new Color(139, 69, 19));
+Rectangle bandeUnten = new Rectangle(20, 380, 560, 20, new Color(139, 69, 19));
+Circle kugel = new Circle(285, 185, 15, Color.RED);
+
+kugel.setDirection(Tools.randomNumber(0, 45));
+
+while (!view.keyPressed('e')) {
+   kugel.move(6);
+
+   if (kugel.intersects(bandeOben) || kugel.intersects(bandeUnten)) {
+      kugel.setDirection(180 - kugel.getDirection());
+   }
+
+   if (kugel.intersects(bandeRechts) || kugel.intersects(bandeLinks)) {
+      kugel.setDirection(360 - kugel.getDirection());
+   }
+
+   view.wait(5);
+}
+
+System.exit(0);`;
+
+    const source = document.querySelector("#source");
+    const modal = document.querySelector("#ideModal");
+    const frame = document.querySelector("#ideFrame");
+    const filename = document.querySelector("#filename");
+    const status = document.querySelector("#transferStatus");
+    const addButton = document.querySelector("#addToIde");
+    const runnerOrigin = new URL(IDE_RUNNER_URL).origin;
+    let ready = false;
+    let pending = null;
+    let transferTimer;
+
+    function javaFilename() {
+      let name = filename.value.trim();
+      if (name && !name.endsWith(".java")) name += ".java";
+      if (!/^[\p{ID_Start}_$][\p{ID_Continue}$]*\.java$/u.test(name)) {
+        status.textContent = "Bitte einen Java-Dateinamen eingeben, z.B. Ufo.java.";
+        filename.focus();
+        return null;
+      }
+      filename.value = name;
+      return name;
+    }
+
+    function loadIDE(name, code) {
+      ready = false;
+      const url = new URL(IDE_RUNNER_URL);
+      url.searchParams.set("transfer", crypto.randomUUID?.() || String(Date.now()));
+      url.searchParams.set("parentOrigin", location.origin);
+      url.hash = new URLSearchParams({ code, filename: name }).toString();
+      frame.src = url.href;
+      modal.setAttribute("open", "");
+    }
+
+    function finishTransfer(message) {
+      clearTimeout(transferTimer);
+      pending = null;
+      addButton.disabled = false;
+      status.textContent = message;
+    }
+
+    function sendPending() {
+      if (ready && pending && !pending.sent) {
+        pending.sent = true;
+        frame.contentWindow.postMessage({ type: "sas-book:add-file", ...pending }, runnerOrigin);
+      }
+    }
+
+    frame.addEventListener("load", () => {
+      frame.contentWindow.postMessage({ type: "sas-book:ready?" }, runnerOrigin);
+    });
+
+    window.addEventListener("message", event => {
+      if (event.source !== frame.contentWindow || event.origin !== runnerOrigin) return;
+      const message = event.data;
+      if (!message || typeof message !== "object") return;
+      if (message.type === "sas-book:ready") {
+        ready = true;
+        sendPending();
+      } else if (pending && message.requestId === pending.requestId) {
+        if (message.type === "sas-book:added") finishTransfer(`${pending.filename} hinzugefuegt.`);
+        if (message.type === "sas-book:error") {
+          modal.removeAttribute("open");
+          finishTransfer(message.error);
+        }
+      }
+    });
+
+    source.value = defaultProgram;
+
+    document.querySelector("#resetCode").addEventListener("click", () => {
+      source.value = defaultProgram;
+      source.focus();
+    });
+
+    document.querySelector("#openIde").addEventListener("click", () => {
+      const name = javaFilename();
+      if (!name) return;
+      finishTransfer("");
+      loadIDE(name, source.value);
+    });
+
+    addButton.addEventListener("click", () => {
+      const name = javaFilename();
+      if (!name) return;
+      if (!frame.getAttribute("src")) {
+        loadIDE(name, source.value);
+        status.textContent = `${name} geoeffnet.`;
+        return;
+      }
+      pending = { filename: name, code: source.value, requestId: crypto.randomUUID?.() || String(Date.now()), sent: false };
+      addButton.disabled = true;
+      status.textContent = "Datei wird uebertragen...";
+      modal.setAttribute("open", "");
+      transferTimer = setTimeout(() => {
+        modal.removeAttribute("open");
+        finishTransfer("Keine Antwort von der IDE. Bitte die IDE-Version und Verbindung pruefen.");
+      }, 20000);
+      sendPending();
+      if (!ready) frame.contentWindow.postMessage({ type: "sas-book:ready?" }, runnerOrigin);
+    });
+
+    document.querySelector("#closeIde").addEventListener("click", closeModal);
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeModal();
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modal.hasAttribute("open")) {
+        closeModal();
+      }
+    });
+
+    function closeModal() {
+      modal.removeAttribute("open");
+      document.querySelector("#openIde").focus();
+    }
+  </script>
+</body>
+</html>

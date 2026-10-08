@@ -1,0 +1,39 @@
+{
+   "name": "Embedded-Workspace",
+   "id": 0,
+   "modules": [
+      {
+         "name": "WortRaten.java",
+         "text": "\n/**\n * Das Programm ist eine Variante des Spiels Galgenmännchen\n * \n * @author Klaus Dingemann\n * @version 01.03.2018\n */\nimport sas.*;\nimport sasio.*;\nimport java.awt.Color;\npublic class WortRaten\n{\n    private final String buchstaben = \"ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ\";\n    private View view;\n    private Button[] btnBuchstaben;\n    private Button btnNeuesWort;\n    private int versuche;\n    private int wortLaenge;\n    private Label lblVersuche;\n    private Ratewort ratewoerter;\n    private String ratewort;\n    private Label[] lblRatebuchstaben;\n    private Textfield txtfldLoesung;\n    private Label lblLoesung;\n    private boolean ende;\n  \n    public WortRaten()\n    {\n        view = new View(890,200, \"Wörter raten\");\n        view.setBackgroundColor(new Color(192, 192, 192));\n        btnBuchstaben = new Button[buchstaben.length()];\n        for (int i = 0; i < buchstaben.length(); i++) {\n            String bstb = buchstaben.substring(i,i+1);\n            btnBuchstaben[i] = new Button(10+i*30,160, 20, 20,bstb, Color.YELLOW);\n        }\n        btnNeuesWort = new Button(20,20,80,20,\"Neues Wort\",Color.RED);\n        lblRatebuchstaben = new Label[0];\n        lblVersuche = new Label (760, 20,100, 30, \"Versuche: 0\",new Color(192, 192, 192),false,false);\n        versuche = 0;\n        ende = false;\n        ratewoerter = new Ratewort();\n        lblLoesung = new Label(320, 120, 60, 20, \"Lösung: \",new Color(192, 192, 192),false, false);\n        txtfldLoesung = new Textfield(380, 110, 100, 30,\"\", view);\n    }\n\n    public void btnNeuesWortAktion() {\n      for (int i = 0; i<lblRatebuchstaben.length; i++) {\n           view.remove(lblRatebuchstaben[i]);\n       }\n      wortLaenge = 0;\n      do {\n       String wortLaengeString = Tools.inputDialog(\"Anzahl der Buchstaben (mindestens 3)\");\n       if (wortLaengeString!=null) {\n           wortLaenge = Integer.parseInt(wortLaengeString);\n           if (wortLaenge > 2) {\n             ratewort = ratewoerter.gibWort(wortLaenge).toUpperCase();\n             lblRatebuchstaben = new Label[wortLaenge];\n             for (int i = 0; i < wortLaenge; i++) {\n                lblRatebuchstaben[i]=new Label((890-40*wortLaenge)/2+i*40, 60, 20, 20, \"\", Color.WHITE, false, true);\n             }\n             versuche = 8;\n\n             lblVersuche.setLabelText(\"Versuche: \"+versuche);\n           }\n       } else {\n           ende = true;\n        }\n      } while (wortLaenge < 3 && !ende);\n    }\n    \n    public void btnBuchstabeAktion(String buchstabe) {\n        versuche = versuche - 1;\n        txtfldLoesung.setActivated(false);\n        for (int i = 0; i < wortLaenge; i++) {\n            if (ratewort.substring(i,i+1).equals(buchstabe)) {\n                lblRatebuchstaben[i].setLabelText(buchstabe);\n            }\n        }\n        lblVersuche.setLabelText(\"Versuche: \"+versuche);\n    }\n    \n    public void txtfldLoesungAktion() {\n        txtfldLoesung.setActivated(true);\n        while (!txtfldLoesung.enterPressed()){\n            view.wait(20);\n        }\n        versuche = versuche - 1;\n    }\n    \n    public void spielen() {\n        boolean erraten;\n        while (!ende) {\n         erraten = false;\n         btnNeuesWortAktion();\n         txtfldLoesung.deleteText();\n         while (!erraten && versuche>0 && !ende) {\n          for (int i = 0; i < btnBuchstaben.length; i++) {\n              if (btnBuchstaben[i].clicked()) {\n                  btnBuchstabeAktion(btnBuchstaben[i].getButtonText());\n              }\n          }\n          if (btnNeuesWort.clicked()) {\n            btnNeuesWortAktion();\n          }\n          if (txtfldLoesung.clicked()) {\n            txtfldLoesungAktion();\n          }\n          if (ratewort.equals(txtfldLoesung.getText().toUpperCase())) {\n              erraten = true;\n          }\n        }  \n        if (!ende) {\n          if (!erraten) {\n             Tools.message(\"Lösung:\" +ratewort, \"Leider verloren\");\n          } else { \n              Tools.message(\"Wort erraten\", \"Glückwunsch\");\n          }\n        }\n     } \n     System.exit(0);\n  }\n  \n  public static void main(String[] args) {\n      WortRaten wr = new WortRaten();\n      wr.spielen();\n      System.exit(0);\n  }\n}\n",
+         "id": 0,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      },
+      {
+         "name": "RateWort.java",
+         "text": "\n/**\n * Lädt die Datei  mit den Ratewörtern und liefert zufällig ein Wort vorgegebener Länge\n * \n * @author (Ihr Name) \n * @version (eine Versionsnummer oder ein Datum)\n */\nimport sasio.*;\nimport sas.Tools;\npublic class Ratewort\n{\n    String[] woerter;\n    \n    public Ratewort()\n    {\n       woerter = StringFileTools.loadFileInStringArray(\"woerter.txt\");\n    }\n\n    public String gibWort(int laenge)\n    {\n        int leerZeichen = 0;\n        String[] woerterZeile;\n        int zufallszahl;\n        if (laenge>=3 && laenge <=10) {\n           woerterZeile = woerter[laenge-3].split(\" \");\n           zufallszahl = Tools.randomNumber(0,woerterZeile.length-1);\n        } else {\n           woerterZeile = woerter[4].split(\" \");\n           zufallszahl = Tools.randomNumber(0,woerterZeile.length-1);\n        }\n        return woerterZeile[zufallszahl];\n    }\n}\n",
+         "id": 1,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      },
+      {
+         "name": "woerter.txt",
+         "text": "Tür Oma Opa Uhr See Zug Tag Bau Tau Mus \nFeld Haus Zahl Tier Maus Auto Auge Wald Erde Zeit\nVogel Woche Monat Musik Stadt Stein Vater Feuer Licht Stadt\nGarten Freude Klasse Schiff Lehrer Wasser Sommer Wetter Himmel Mutter Bruder Hunger Heizöl\nWohnung Zeitung Rechner Drucker Quadrat Dreieck Pfeffer Tropfen Whiskey Strumpf\nComputer Rechteck Gymnastik Schwester Apfelsaft Blutegel Bierglas Internet Ehrentag Happyend\nSilvester Xanthippe Biografie Filzstift Filmmusik Pfingsten Teefilter Abenteuer Eiersalat Fernlicht Steckdose\nLokomotive Kirschkern Atmosphäre Windjammer Bewunderer Bettwäsche Jahresende Hundeleine",
+         "id": 2,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      }
+   ],
+   "settings": {
+      "language": "Java",
+      "libraries": [
+         "sas"
+      ]
+   }
+}

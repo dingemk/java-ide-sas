@@ -1,0 +1,40 @@
+{
+   "name": "Embedded-Workspace",
+   "id": 0,
+   "modules": [
+      {
+         "name": "Digitaluhr.java",
+         "text": "\n/**\n * Anzeige der MEZ und der New Yorker-Zeit mit zwei Digitalanzeigen\n * \n * @author Klaus Dingemann\n * @version 02.01.2017\n */\nimport sas.*;\nimport java.awt.Color;\npublic class Digitaluhr\n{\n   private View view;\n   private Digitalanzeige anzeigeOrtszeit;\n   private Digitalanzeige anzeigeNYZeit;\n   private Uhrzeit ortszeit;\n   private Uhrzeit zeitNY;\n\n    /**\n     * Konstruktor für Objekte der Klasse Digitaluhr\n     */\n   public Digitaluhr()\n   {\n      view = new View(250, 250, \"Digitaluhr\");\n      ortszeit = new Uhrzeit(0);\n      zeitNY = new Uhrzeit(-6);\n      anzeigeOrtszeit = new Digitalanzeige(ortszeit, 25, 25, \"Münster\", Color.RED);\n      anzeigeNYZeit = new Digitalanzeige(zeitNY, 25, 125, \"New York\", Color.BLUE);\n   }\n\n \n    \n   public void fuehreAus() {\n      while (!view.keyPressed('q')) {\n         anzeigeOrtszeit.setzeZeit(ortszeit);\n         anzeigeNYZeit.setzeZeit(zeitNY);\n         view.wait(1000);\n      }\n   }\n    \n   public static void main(String[] args) {\n      Digitaluhr du = new Digitaluhr();\n      du.fuehreAus();\n   }\n}\n\n",
+         "id": 0,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      },
+      {
+         "name": "Uhrzeit.java",
+         "text": "\n/**\n * Objekte dieser KLasse enthalten die aktuelle Uhrzeit\n * \n * @author Klaus Dingemann\n * @version 30.12.2016\n */\n\nimport sas.Tools;\npublic class Uhrzeit\n{\n    private int verschiebung;\n\n    public Uhrzeit(int zeitverschiebung)\n    {   \n       verschiebung = zeitverschiebung;\n    }\n\n    public void setzeZeitverschiebung(int zeitverschiebung){\n       verschiebung = zeitverschiebung;\n    }\n    \n    public int gibStunde(){\n        return Tools.getHour()+verschiebung;\n    }\n    \n    public int gibMinute(){\n        return Tools.getMinute();\n    }\n    \n    public int gibSekunde(){\n        return Tools.getSecond();\n    }\n       \n    public String gibZeitString(){\n        String zeitstr = \"\";\n        int stunde = gibStunde();\n        int minute = gibMinute();\n        int sekunde = gibSekunde();\n        if (stunde<10) {\n            zeitstr = zeitstr + \"0\" + stunde+\":\";\n        } else {\n            zeitstr = zeitstr + stunde + \":\";\n        }\n        if (minute<10) {\n            zeitstr = zeitstr + \"0\" + minute + \":\";\n        } else {\n            zeitstr = zeitstr + minute +\":\";\n        }    \n        if (sekunde<10) {\n            zeitstr = zeitstr + \"0\" + sekunde;\n        } else {\n            zeitstr = zeitstr + sekunde;\n        }    \n        return zeitstr;\n    }\n    \n}\n\n",
+         "id": 1,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      },
+      {
+         "name": "Digitalanzeige.java",
+         "text": "\n/**\n * Erzeugt die Ausgabe einer Digitaluhr\n * \n * @author Klaus Dingemann\n * @version 01.02.2017\n */\nimport sas.*;\nimport java.awt.Color;\npublic class Digitalanzeige\n{\n   private Uhrzeit uhrzeit;\n   private Text zeitText;\n    \n    /**\n     * Konstruktor für Objekte der Klasse Digitalanzeige\n     */\n   public Digitalanzeige(Uhrzeit zeit, double xPos, double yPos, String ort, Color farbe)\n   {\n      Rectangle gehauese = new Rectangle(xPos, yPos, 200, 80, farbe);\n      Rectangle anzeige = new Rectangle(xPos + 6, yPos + 5, 188, 35, Color.WHITE);\n      uhrzeit = zeit;\n      zeitText = new Text(xPos + 10, yPos + 1, uhrzeit.gibZeitString());\n      zeitText. setFontMonospaced(true, 36);\n      Text ortText = new Text(xPos + 10, yPos + 40, ort);\n      ortText.setFontMonospaced(true, 36);\n      ortText.setColor(Color.WHITE);\n      double laenge = ortText.getShapeWidth();\n      ortText.moveTo(xPos + (200 - laenge) / 2, yPos + 40);\n   }\n\n   public void setzeZeit(Uhrzeit zeit) {\n      uhrzeit = zeit;\n      zeitText.setText(uhrzeit.gibZeitString());\n   }\n    \n\n}\n\n",
+         "id": 2,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      }
+   ],
+   "settings": {
+      "language": "Java",
+      "libraries": [
+         "sas",
+         "nrw"
+      ]
+   }
+}

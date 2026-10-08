@@ -1,0 +1,115 @@
+[
+  {
+    "project": "Programme/BaelleFangen",
+    "files": [
+      "BaelleFangen.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/BaelleKlicken",
+    "files": [
+      "BaelleKlicken.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Billard",
+    "files": [
+      "Billard.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/breakOut",
+    "files": [
+      "BreakOut.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/flappyBird",
+    "files": [
+      "Roehre.java",
+      "Spiel.java",
+      "Vogel.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Fluppy Bird",
+    "files": [
+      "Bird.java",
+      "FluppyBird.java",
+      "Insekt.java",
+      "Insekten.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Objekte",
+    "files": [
+      "GrafikObjekte.java",
+      "Mausbeispiel.java",
+      "MausBewegen.java",
+      "Move.java",
+      "Scale.java",
+      "SchwarzesQuadrat.java",
+      "Turn.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Pfeilwurf",
+    "files": [
+      "Pfeilwurf1.java",
+      "Pfeilwurf2.java",
+      "Pfeilwurf3.java",
+      "Pfeilwurf4.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Pong 2Spieler",
+    "files": [
+      "Anzeige.java",
+      "Pong.java",
+      "Schlaeger.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Staubsauger",
+    "files": [
+      "MuellSammeln.java",
+      "Staubsaugerroboter.java",
+      "Staubsaugerroboter2.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Tangram",
+    "files": [
+      "Tangram.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Ufo-Spiel",
+    "files": [
+      "Asteroid.java",
+      "Ufo.java",
+      "Ufospiel.java"
+    ],
+    "errors": []
+  },
+  {
+    "project": "Programme/Windmuehlen",
+    "files": [
+      "test.java",
+      "Windpark.java",
+      "Windrad.java"
+    ],
+    "errors": []
+  }
+]

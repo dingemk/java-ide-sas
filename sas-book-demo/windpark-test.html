@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<title>Windpark-Test</title>
+<p id="status">Windpark-Test wird geladen.</p>
+<script type="module">
+    try {
+        const response = await fetch("./examples/WindparkTest.java");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const runner = new URL("./runner.html", location.href);
+        runner.hash = new URLSearchParams({ code: await response.text() }).toString();
+        location.replace(runner.href);
+    } catch (error) {
+        document.getElementById("status").textContent = `Test konnte nicht geladen werden: ${error.message}`;
+    }
+</script>
+</html>

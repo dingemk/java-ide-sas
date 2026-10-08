@@ -1,0 +1,57 @@
+{
+   "name": "Embedded-Workspace",
+   "id": 0,
+   "modules": [
+      {
+         "name": "NIM.java",
+         "text": "/**\n * Implementation des Nim-Spiels gegen den Computer\n * @author: Klaus Dingeman\n * @version: 04.03.2018\n*/\nimport sas.*;\nimport sasio.*;\npublic class NIM\n{\n    private View view;\n    private Spielfeld spielfeld;\n    private Spieler spieler;\n    private Computer computer;\n    private boolean spielBeendet;\n    /**\n     * Konstruktor für Objekte der Klasse NIM\n     */\n    public NIM()\n    {\n       view = new View(800, 400, \"NIM\"); \n       spielfeld = new Spielfeld(view);\n       spieler = new Spieler(spielfeld);\n       computer = new Computer(spielfeld);\n       spielBeendet = false;\n    }\n\n    public void siegerNachricht(char sieger) {\n        \n        String s = \"\";\n        if (sieger=='c') {\n            s = \"Der Computer hat gewonnen.\";\n        } else {\n            s = \"Herzlichen Glückwunsch, du hast gewonnen.\";\n        }\n        Tools.message(s,\"Gewinner\");\n    }\n    \n    public void spielen() {\n        char sieger = 'c';\n        while (!spielBeendet) {\n           spieler.spielerZug();\n           if (spielfeld.spielBeendet()) {\n               spielBeendet = true;\n               sieger = 's';\n           } else {\n               computer.computerZug();\n               if (spielfeld.spielBeendet()) {\n                   spielBeendet = true;\n               } \n             }   \n           view.wait(10);\n        }\n        siegerNachricht(sieger);\n    }\n    \n    public static void main(String[] args) {\n        NIM nim = new NIM();\n        nim.spielen();\n   }\n}\n",
+         "id": 0,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      },
+      {
+         "name": "Spielfeld.java",
+         "text": "import sas.*;\nimport sasio.*;\nimport java.awt.Color;\nclass Spielfeld {\n    private Schale[] schalen = new Schale[5];\n    private Textfield[] txtfldEingabe = new Textfield[5];\n    private View view;\n    \n    public Spielfeld(View pView) {\n        view = pView;\n        Text titel = new Text(350, 40, \"NIM\", Color.RED);\n        titel.setFontSerif(true, 32);\n        for (int i=0; i<5; i++) {\n            int nr = i+1;\n            new Text(55+i*150, 120, \"Schale \"+nr, Color.BLACK);\n            schalen[i] = new Schale(50+i*150, 150,100, Color.BLACK);\n            txtfldEingabe[i] = new Textfield(85+i*150, 270,30,20,\"\",view);\n        }\n        new Text(50, 310, \"Eingabefeld klicken, Anzahl der Steine eingeben und <Enter> drücken\");\n        verteileChips();\n    }\n    \n    public void verteileChips() {\n        int schaleNr;\n        for (int i = 0; i<40; i++) {\n            Circle chip = new Circle(0,0,8,Color.RED);\n            do\n               schaleNr = Tools.randomNumber(0,4);\n            while (schalen[schaleNr].gibAnzahlChips() == 15);\n            schalen[schaleNr].inhaltHinzu(chip);\n        }\n    }\n    \n    \n    public void ziehen() {\n        boolean zugKorrekt = false;\n        int fokus = 0;\n        while (!zugKorrekt) {\n            for (int i=0; i<5; i++) {\n                if (txtfldEingabe[i].clicked()) {\n                    txtfldEingabe[fokus].setActivated(false);\n                    fokus = i;\n                    txtfldEingabe[fokus].setActivated(true);\n                }\n            }\n            if (txtfldEingabe[fokus].enterPressed()) {\n                int zug = Integer.parseInt(txtfldEingabe[fokus].getText());\n                if (zug > 0 && zug <= schalen[fokus].gibAnzahlChips()) {\n                    schalen[fokus].inhaltEntfernen(zug);\n                    txtfldEingabe[fokus].deleteText();\n                    txtfldEingabe[fokus].setActivated(false);\n                    zugKorrekt = true;\n                } else {\n                    zugKorrekt = false;\n                    txtfldEingabe[fokus].setActivated(true);\n                    Tools.message(\"Kein korrekter Zug\", \"Fehler\");\n                }\n            }\n        }\n    }\n    \n    public boolean spielBeendet(){\n        int summe = 0;\n        for (int i = 0; i < 5; i++) {\n          summe = summe + schalen[i].gibAnzahlChips();     \n        }\n        return summe == 0;\n    }\n    \n    public void nimmWeg(int schaleNr, int anzahl) {\n        schalen[schaleNr].inhaltEntfernen(anzahl);\n    }\n    \n    public int gibAnzahlChips(int schaleNr) {\n        return schalen[schaleNr].gibAnzahlChips();\n    }\n}\n",
+         "id": 1,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      },
+      {
+         "name": "Schale.java",
+         "text": "import sas.*;\nimport java.awt.Color;\nclass Schale {\n\n    private Rectangle grafik;\n    private int anzahlInhalt;\n    private int xPosition;\n    private int yPosition;\n    private int breite;\n    private Circle[] inhalt = new Circle[15];\n    \n    public Schale(int pXPos, int pYPos, int pBreite, Color pFarbe) {\n       grafik = new Rectangle(pXPos, pYPos, pBreite, pBreite, pFarbe);\n       anzahlInhalt = 0;\n       xPosition = pXPos;\n       yPosition = pYPos;\n       breite = pBreite;\n       for (int i=0; i<15; i++) {\n           inhalt[i] = null;\n       }\n    }\n\n    public void inhaltHinzu(Circle chip) {\n      inhalt[anzahlInhalt] = chip;\n      anzahlInhalt = anzahlInhalt + 1;\n      int zeile = (anzahlInhalt - 1) / 4;\n      int spalte = (anzahlInhalt - 1) % 4;\n      double differenz = (breite/5 - chip.getShapeWidth())/2;\n      double xPos = differenz + spalte * breite / 5; \n      double yPos = differenz + zeile * breite / 5;\n      double verschiebung = (breite - 4 * chip.getShapeWidth() - 3* differenz*2)/2;\n      chip.moveTo(xPosition + verschiebung + xPos, yPosition + verschiebung + yPos);\n    }    \n    \n    public void inhaltEntfernen(int anzahl) {\n        if (anzahl <= anzahlInhalt) {\n          for (int i = anzahlInhalt - anzahl; i<anzahlInhalt; i++) {\n             inhalt[i].setHidden(true);\n             inhalt[i]=null;\n          }\n          anzahlInhalt = anzahlInhalt - anzahl;\n        }\n    }\n    \n    public int gibAnzahlChips() {\n        return anzahlInhalt;\n    }\n        \n}",
+         "id": 2,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      },
+      {
+         "name": "Spieler.java",
+         "text": "public class Spieler\n{\n    private Spielfeld spielfeld;  \n\n    public Spieler(Spielfeld pSpielfeld)\n    {\n        spielfeld = pSpielfeld;\n    }\n\n    public void spielerZug()\n    {\n        boolean zugKorrekt = false;\n        spielfeld.ziehen();\n    }\n}\n",
+         "id": 3,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      },
+      {
+         "name": "Computer.java",
+         "text": "import sasio.*;\nimport sas.*;\npublic class Computer\n{\n    \n   private Spielfeld spielfeld; \n   private int[][] chipsBinaer = new int[5][4];\n\n    \n   public Computer(Spielfeld pSpielfeld)\n   {\n      spielfeld = pSpielfeld;\n   }\n\n   private int[] dezInBinaer(int zahl) {\n      int[] binaerArray = new int [4];\n      for (int i = 0; i < 4; i++) {\n         binaerArray[i] = zahl % 2;\n         zahl = zahl / 2;\n      }\n      return binaerArray;\n   }\n    \n   public int binaerInDez(int[] binaerArray) {\n      int zahl = 0;\n      for (int i = 3; i >= 0; i--) {\n         zahl = zahl * 2 + binaerArray[i];\n      }\n      return zahl;\n   } \n    \n   private int[] binaerSumme() {\n      int[] binaerSumme = new int [4];\n      for (int i = 0; i < 4; i++) {\n         binaerSumme[i] = chipsBinaer[0][i];\n      }\n      for (int j = 1; j < 5; j++) {\n         for (int i = 0; i < 4; i++) {\n            binaerSumme[i] = (binaerSumme[i] + chipsBinaer[j][i]) % 2;\n         }\n      }\n      return binaerSumme;\n   }\n    \n   private void chipsBinaer() {\n      for (int i = 0; i < 5; i++) {\n         chipsBinaer[i] = dezInBinaer(spielfeld.gibAnzahlChips(i));\n      }\n   }\n    \n   private int[] berechneZug(int[] binaerSumme) {\n      int schale = -1;\n      int j = 0;\n      int zug[] = new int[2];\n      int[] summe = new int[4];\n      int summeDezimal = 0;\n      int chipsDezimal = 0;\n      j = 0;\n      while (schale == -1 && j < 5) {\n         for (int i = 0; i < 4; i++) {\n            summe[i] = (chipsBinaer[j][i] + binaerSumme[i]) % 2;\n         }\n         summeDezimal = binaerInDez(summe);\n         chipsDezimal = spielfeld.gibAnzahlChips(j);\n         if (summeDezimal < chipsDezimal) {\n            schale = j;\n         } else {\n            if (j < 5) {\n               j = j + 1;\n            }\n         }\n      }\n     \n      if (schale == -1) {\n         j = 0;\n         while (spielfeld.gibAnzahlChips(j) == 0) {\n            j = j + 1;\n         }\n         zug[0] = j;\n         zug[1] = 1;\n      } else {\n         zug[0] = schale;\n         zug [1] = spielfeld.gibAnzahlChips(schale) - summeDezimal;\n      }\n      return zug;\n   }\n            \n \n   public void computerZug()\n   {\n      chipsBinaer(); \n      int[] binaerSumme = binaerSumme();\n      int[] zug = new int[2];\n      zug = berechneZug(binaerSumme);\n      int schale = zug[0] + 1;\n      Tools.message(\"Der Computer nimmt \" + zug[1] + \" Chips aus Schale \" + schale, \"Computerzug\");\n      spielfeld.nimmWeg(zug[0], zug[1]);\n      \n   }\n}",
+         "id": 4,
+         "identical_to_repository_version": true,
+         "is_copy_of_id": null,
+         "repository_file_version": null,
+         "isFolder": false
+      }
+   ],
+   "settings": {
+      "language": "Java",
+      "libraries": [
+         "sas"
+      ]
+   }
+}
